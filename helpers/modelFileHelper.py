@@ -230,6 +230,10 @@ class ModelFileHelper(object):
                 xTest.drop(testColumn,axis=1, inplace=True)
                 if (Silent==False): print (testColumn + " does not exist at train model. REMOVED from test model") 
 
+        #ordenamos las columnas para que esten en el mismo orden todas:
+        xTest.sort_index(axis=1, inplace=True)
+        xTrain.sort_index(axis=1,inplace=True)
+
 
         #lanzamos las predicciones:
         if (Silent==False):
