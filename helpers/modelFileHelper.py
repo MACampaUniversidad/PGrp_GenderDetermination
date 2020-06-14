@@ -235,61 +235,61 @@ class ModelFileHelper(object):
         xTrain.sort_index(axis=1,inplace=True)
       
 
-        #lanzamos las predicciones:
+        #medimos la capacidad explicativa de cada modelo entrenado sobre el propio xtrain. Cómo es capaz de explicar la variable dependiente.
         if (Silent==False):
              print ("Procesando XGBoost...")   
         xgb.fit(xTrain,yTrain)
-        yPred = xgb.predict(xTest)
-        probs = xgb.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = xgb.predict(xTrain)
+        probs = xgb.predict_proba(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones= [('XGBoost',  str(round (xgb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy())]
         #-------
         if (Silent==False):
             print ("Procesando Regresión logística...")   
         logReg.fit(xTrain,yTrain)
-        yPred = logReg.predict(xTest)
-        probs = logReg.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = logReg.predict(xTrain)
+        probs = logReg.predict_proba(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones.append(('Regresión Logística',  str(round (logReg.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
             print ("Procesando Random Forest...")
         rForest.fit(xTrain,yTrain)
-        yPred = rForest.predict(xTest)
-        probs = rForest.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = rForest.predict(xTrain)
+        probs = rForest.predict_proba(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
             print ("Procesando Perceptron...")   
         pctron.fit(xTrain,yTrain)
-        yPred = pctron.predict(xTest)
-        probs = pctron._predict_proba_lr(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = pctron.predict(xTrain)
+        probs = pctron._predict_proba_lr(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones.append(('Perceptron',  str(round (pctron.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
             print("Procesando árboles de decisión...")
         decTree.fit(xTrain,yTrain)
-        yPred = decTree.predict(xTest)
-        probs = decTree.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = decTree.predict(xTrain)
+        probs = decTree.predict_proba(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones.append(('árboles de decisión',  str(round (decTree.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
             print ("Procesando Naybe Bayes...")
         gaussNb.fit(xTrain,yTrain)
-        yPred = gaussNb.predict(xTest)
-        probs = gaussNb.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
+        yPred = gaussNb.predict(xTrain)
+        probs = gaussNb.predict_proba(xTrain)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTrain, yPred)
         precisiones.append(('Naybe Bayes',  str(round (gaussNb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
             print ("Procesando K-Neighbours...")
         knNeighbors.fit(xTrain,yTrain)
-        yPred = knNeighbors.predict(xTest)
-        probs = knNeighbors.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        yPred = knNeighbors.predict(xTrain)
+        probs = knNeighbors.predict_proba(xTrain)
+        resultado= self.__getResultado('test_id','is_female',xTrain, yPred)
         precisiones.append(('K-Neighbours',  str(round (knNeighbors.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
     
         #ordenar de mayor a menor usando el score de los modelos: 
@@ -310,7 +310,7 @@ class ModelFileHelper(object):
             if (ROC_Curve==True):
                 predictionResult = precision[2]
                 probabilities =  precision[3]
-                self.__calculateRocAucCurve(predictionResult[predictColumn], probabilities, precisiones[0][0])    
+                self.__calculateRocAucCurve(predictionResult[predictColumn], probabilities, precisiones[0])    
            
 
         print("exportando el mejor de los modelos:")
