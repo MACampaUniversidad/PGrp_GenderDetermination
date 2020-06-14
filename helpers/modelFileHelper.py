@@ -249,7 +249,7 @@ class ModelFileHelper(object):
         logReg.fit(xTrain,yTrain)
         yPred = logReg.predict(xTest)
         probs = logReg.predict_proba(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('Regresión Logística',  str(round (logReg.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -257,7 +257,7 @@ class ModelFileHelper(object):
         rForest.fit(xTrain,yTrain)
         yPred = rForest.predict(xTest)
         probs = rForest.predict_proba(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -265,7 +265,7 @@ class ModelFileHelper(object):
         pctron.fit(xTrain,yTrain)
         yPred = pctron.predict(xTest)
         probs = pctron._predict_proba_lr(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('Perceptron',  str(round (pctron.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -273,7 +273,7 @@ class ModelFileHelper(object):
         decTree.fit(xTrain,yTrain)
         yPred = decTree.predict(xTest)
         probs = decTree.predict_proba(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('árboles de decisión',  str(round (decTree.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -281,7 +281,7 @@ class ModelFileHelper(object):
         gaussNb.fit(xTrain,yTrain)
         yPred = gaussNb.predict(xTest)
         probs = gaussNb.predict_proba(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('Naybe Bayes',  str(round (gaussNb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -289,7 +289,7 @@ class ModelFileHelper(object):
         knNeighbors.fit(xTrain,yTrain)
         yPred = knNeighbors.predict(xTest)
         probs = knNeighbors.predict_proba(xTest)
-        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
         precisiones.append(('K-Neighbours',  str(round (knNeighbors.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
     
         #ordenar de mayor a menor usando el score de los modelos: 
