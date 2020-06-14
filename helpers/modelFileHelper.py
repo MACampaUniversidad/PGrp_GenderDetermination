@@ -185,10 +185,11 @@ class ModelFileHelper(object):
         plt.figure(figsize=(dimensionX, dimensionY))
         sea.heatmap(corr, xticklabels=True, yticklabels=True) 
 
-    def getBestPredictionAlgorithm(self, predictColumn, testModel,  Silent=False, ROC_Curve=True ):
+    def getBestPredictionAlgorithm(self, predictColumn, identifierColumn, testModel,  Silent=False, ROC_Curve=True ):
         '''
         Se usan varios algoritmos de prediccion para determinar cuál es el mejor:
         predictColumn es la columna a ser predecida. El modelo entrenado se asume que es el contenido en la instancia del helper. Self.
+        identifierColumn: normalmente es una columna que hace las veces de indexador identificando de forma unica un registro.
         testModel: El modelo de test contra el que se realiza la predicción. (Pandas Dataframe)
 
         El modo Silent activa la salida de texto informativo
@@ -201,8 +202,116 @@ class ModelFileHelper(object):
           - Bayesiano (Naybe)
           - K-NeigthBors (Vecindad de 5)
         '''
+       
+        #inicializar los clasificadores
+        xgb=XGBClassifier(n_estimators=500,n_jobs =16,max_depth=16)
+        logReg= LogisticRegression()
+        rForest= RandomForestClassifier(n_estimators=500,n_jobs =16,max_depth=16)
+        pctron = Perceptron(max_iter=2000 )
+        decTree = DecisionTreeClassifier(max_depth=16)
+        gaussNb= GaussianNB()
+        knNeighbors = KNeighborsClassifier(n_neighbors=5, algorithm='auto') #usamos auto para dejar a el que decida el mejor.
         
+        #Slicing del modelo
+          #el metodo drop de pandas no elimina la columna en el dataframe; retorna un dataframe como resultado de la operacion.
+        xTrain = self.csvFile.drop(predictColumn, axis=1, inplace=False)
+        yTrain = self.csvFile[predictColumn]
 
+        xTest=testModel.copy() #asegurarnos que trabajamos sobre una copia no sobre el modelo por referencia.
+        
+        if (Silent==False):
+             print ("harmonizing the train model, ensure column equivalences:") 
+
+        #armonizamos el modelo de test eliminando aquellas columnas que no estén presentes en el modelo de entrenamiento
+        for testColumn in xTest.columns:
+            if testColumn in xTrain.columns:
+                if (Silent==False): print (testColumn + " exist at train model.") 
+            else:
+                xTest.drop(testColumn,axis=1, inplace=True)
+                if (Silent==False): print (testColumn + " does not exist at train model. REMOVED from test model") 
+
+
+        #lanzamos las predicciones:
+        if (Silent==False):
+             print ("Procesando XGBoost...")   
+        xgb.fit(xTrain,yTrain)
+        yPred = xgb.predict(xTest)
+        probs = xgb.predict_proba(xTest)
+        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        precisiones= [('XGBoost',  str(round (xgb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy())]
+        #-------
+        if (Silent==False):
+            print ("Procesando Regresión logística...")   
+        logReg.fit(xTrain,yTrain)
+        yPred = logReg.predict(xTest)
+        probs = logReg.predict_proba(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('Regresión Logística',  str(round (logReg.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
+        #-------
+        if (Silent==False):
+            print ("Procesando Random Forest...")
+        rForest.fit(xTrain,yTrain)
+        yPred = rForest.predict(xTest)
+        probs = rForest.predict_proba(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
+        #-------
+        if (Silent==False):
+            print ("Procesando Perceptron...")   
+        pctron.fit(xTrain,yTrain)
+        yPred = pctron.predict(xTest)
+        probs = pctron._predict_proba_lr(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('Perceptron',  str(round (pctron.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
+        #-------
+        if (Silent==False):
+            print("Procesando árboles de decisión...")
+        decTree.fit(xTrain,yTrain)
+        yPred = decTree.predict(xTest)
+        probs = decTree.predict_proba(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('árboles de decisión',  str(round (decTree.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
+        #-------
+        if (Silent==False):
+            print ("Procesando Naybe Bayes...")
+        gaussNb.fit(xTrain,yTrain)
+        yPred = gaussNb.predict(xTest)
+        probs = gaussNb.predict_proba(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('Naybe Bayes',  str(round (gaussNb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
+        #-------
+        if (Silent==False):
+            print ("Procesando K-Neighbours...")
+        knNeighbors.fit(xTrain,yTrain)
+        yPred = knNeighbors.predict(xTest)
+        probs = knNeighbors.predict_proba(xTest)
+        resultado= self.__getResultado('train_id','is_female',xTest, yPred)
+        precisiones.append(('K-Neighbours',  str(round (knNeighbors.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
+    
+        #ordenar de mayor a menor usando el score de los modelos: 
+        precisiones.sort(key=lambda tupla: tupla[1], reverse=True) 
+        
+        #precisiones contiene una tupla con los siguientes valoes : 
+        # posicion [0] nombre del algoritmo
+        # posicion [1] xcore o calidad del modelo predictivo
+        # posicion [2] resultado de la prediccion para el modelo.
+        # posicion [3] probabilidades para curva ROC
+        for precision in precisiones:
+
+            if (Silent==False) :
+                print(precision[0] + " " + precision[1])
+            if (ROC_Curve==True):
+                self.__calculateRocAucCurve(precision[2], precision[3], precision[0])    
+
+        print("exportando el mejor de los modelos:")
+        tupla = precisiones[0]
+        print(tupla[0]+ "Es el ganador!")
+        tupla[2].to_csv( tupla[0] +"_submission.csv", index=False)
+        print ("Generado " +tupla[0] + "_submission.csv" )  
+    
+    def __getResultado(self, identifierColumn, predictedColumn, test, predictions):
+        return pd.DataFrame({identifierColumn : test[identifierColumn], predictedColumn: predictions})
+    
     def __calculateRocAucCurve(self, testy, probs, modelName):
         #Nos quedamos con las probabilidades de la clase positiva únicamente
         probs = probs[:, 1]

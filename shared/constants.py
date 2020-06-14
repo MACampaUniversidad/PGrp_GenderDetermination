@@ -16,7 +16,11 @@ FILENAME_TEST_PART2 = "data_sources/test_part2.csv"
 FILENAME_TRAIN_PART2 = "data_sources/train_part2.csv"
 
 # Diccionario que contiene los ficheros CSV bajo las claves. Pueden ser accedidos mediante las claves train y test 
-CSV_FILES = { TRAIN_KEY : mh.ModelFileHelper("data_sources/train.csv"), TEST_KEY :   mh.ModelFileHelper("data_sources/test.csv")} 
+CSV_FILES = { TRAIN_KEY : mh.ModelFileHelper("data_sources/train.csv"), 
+    TEST_KEY :   mh.ModelFileHelper("data_sources/test.csv"), 
+    TEST_KEY_PART_2 : mh.ModelFileHelper(FILENAME_TEST_PART2) , 
+    TRAIN_KEY_PART_2 : mh.ModelFileHelper(FILENAME_TRAIN_PART2) } 
+
 # Diccionario que contiene todos los posibles lenguajes para transcribirlos a un valor numérico.
 LANGUAGES = {
 'bengali':1,
