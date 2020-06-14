@@ -233,7 +233,7 @@ class ModelFileHelper(object):
         #ordenamos las columnas para que esten en el mismo orden todas:
         xTest.sort_index(axis=1, inplace=True)
         xTrain.sort_index(axis=1,inplace=True)
-
+      
 
         #lanzamos las predicciones:
         if (Silent==False):
@@ -241,7 +241,7 @@ class ModelFileHelper(object):
         xgb.fit(xTrain,yTrain)
         yPred = xgb.predict(xTest)
         probs = xgb.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones= [('XGBoost',  str(round (xgb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy())]
         #-------
         if (Silent==False):
@@ -249,7 +249,7 @@ class ModelFileHelper(object):
         logReg.fit(xTrain,yTrain)
         yPred = logReg.predict(xTest)
         probs = logReg.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones.append(('Regresión Logística',  str(round (logReg.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -257,7 +257,7 @@ class ModelFileHelper(object):
         rForest.fit(xTrain,yTrain)
         yPred = rForest.predict(xTest)
         probs = rForest.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -265,7 +265,7 @@ class ModelFileHelper(object):
         pctron.fit(xTrain,yTrain)
         yPred = pctron.predict(xTest)
         probs = pctron._predict_proba_lr(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones.append(('Perceptron',  str(round (pctron.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -273,7 +273,7 @@ class ModelFileHelper(object):
         decTree.fit(xTrain,yTrain)
         yPred = decTree.predict(xTest)
         probs = decTree.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones.append(('árboles de decisión',  str(round (decTree.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -281,7 +281,7 @@ class ModelFileHelper(object):
         gaussNb.fit(xTrain,yTrain)
         yPred = gaussNb.predict(xTest)
         probs = gaussNb.predict_proba(xTest)
-        resultado= self.__getResultado('test_id','is_female',xTest, yPred)
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
         precisiones.append(('Naybe Bayes',  str(round (gaussNb.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy(),probs.copy()))
         #-------
         if (Silent==False):
@@ -296,7 +296,8 @@ class ModelFileHelper(object):
         precisiones.sort(key=lambda tupla: tupla[1], reverse=True) 
         if (Silent==False):
             print ("Mejor algoritmo: " + precisiones[0][0] + " " + precisiones[0][1] + "%" )
-        
+
+
         #precisiones contiene una tupla con los siguientes valoes : 
         # posicion [0] nombre del algoritmo
         # posicion [1] xcore o calidad del modelo predictivo
@@ -307,11 +308,13 @@ class ModelFileHelper(object):
             if (Silent==False) :
                 print(precision[0] + " " + precision[1])
             if (ROC_Curve==True):
-                self.__calculateRocAucCurve(precision[2], precision[3], precision[0])    
+                predictionResult = precision[2]
+                probabilities =  precision[3]
+                self.__calculateRocAucCurve(predictionResult[predictColumn], probabilities, precisiones[0][0])    
+           
 
         print("exportando el mejor de los modelos:")
         tupla = precisiones[0]
-        print(tupla[0]+ "Es el ganador!")
         tupla[2].to_csv( tupla[0] +"_submission.csv", index=False)
         print ("Generado " +tupla[0] + "_submission.csv" )  
     
