@@ -294,6 +294,8 @@ class ModelFileHelper(object):
     
         #ordenar de mayor a menor usando el score de los modelos: 
         precisiones.sort(key=lambda tupla: tupla[1], reverse=True) 
+        if (Silent==False):
+            print ("Mejor algoritmo: " + precisiones[0][0] + " " + precisiones[0][1] + "%" )
         
         #precisiones contiene una tupla con los siguientes valoes : 
         # posicion [0] nombre del algoritmo
