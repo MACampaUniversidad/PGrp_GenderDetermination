@@ -245,21 +245,24 @@ class ModelFileHelper(object):
             model_engine.fit(xTrain,yTrain)
             probs = model_engine.predict_proba(xTest)
             precisionModelo= str(round (model_engine.score(xTrain, yTrain)*100,2))
+            
+            #dibujar Curva Roc
+            if (Silent==False) :
+                print( "Precision media:" + precisionModelo )
+            
+            aucModelo= self.__calculateRocAucCurve(yTest, probs, model_name)
             #precisiones contiene una tupla con los siguientes valoes : 
             # posicion [0] nombre del algoritmo
             # posicion [1] el algoritmo
             # posicion [2] xcore o calidad del modelo predictivo
-            precisiones.append((model_name, model_engine, precisionModelo))
-            #dibujar Curva Roc
-            if (Silent==False) :
-                print( "Precision media:" + precisionModelo )
-            self.__calculateRocAucCurve(yTest, probs, model_name)    
+            # posicion [3] AUC del modelo
+            precisiones.append((model_name, model_engine, precisionModelo,aucModelo))    
         
     
-        #ordenar de mayor a menor usando el score de los modelos: 
-        precisiones.sort(key=lambda tupla: tupla[2], reverse=True) 
+        #ordenar de mayor a menor usando el AUC de los modelos: 
+        precisiones.sort(key=lambda tupla: tupla[3], reverse=True) 
         if (Silent==False):
-            print ("Mejor algoritmo: " + precisiones[0][0] + " " + precisiones[0][1] + "%" )
+            print ("Mejor algoritmo: " + precisiones[0][0] + " con una precision media del " + precisiones[0][2] + "% y un AUC de " + precisiones[0][3] )
  
 
        # print("exportando el mejor de los modelos:")
