@@ -257,8 +257,8 @@ class ModelFileHelper(object):
         rForest.fit(xTrain,yTrain)
         yPred = rForest.predict(xTest)
         probs = rForest.predict_proba(xTest)
-        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, yPred)
-        precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(),probs.copy()))
+        resultado= self.__getResultado(identifierColumn,predictColumn,xTest, probs)
+        precisiones.append(('Random Forest',  str(round (rForest.score(xTrain, yTrain)*100,2 )), resultado.copy(), yPred.copy()))
         #-------
         #if (Silent==False):
         #    print ("Procesando Perceptron...")   
@@ -308,9 +308,9 @@ class ModelFileHelper(object):
             if (Silent==False) :
                 print(precision[0] + " " + precision[1])
             if (ROC_Curve==True):
-                predictionResult = precision[2]
-                probabilities =  precision[3]
-                self.__calculateRocAucCurve(predictionResult[predictColumn], probabilities, precision[0])    
+                probabilities = precision[2]
+                predictions =  precision[3]
+                self.__calculateRocAucCurve(probabilities[predictColumn], predictions, precision[0])    
            
 
         print("exportando el mejor de los modelos:")
@@ -326,10 +326,11 @@ class ModelFileHelper(object):
         probs = probs[:, 1]
 
         #Calculamos puntuación AUC y dibujamos curva ROC. El valor ideal de AUC es 1.
-        fpr, tpr, thresholds = roc_curve(testy, probs)  
-        self.__drawRocCurve(fpr, tpr, modelName)
         auc = roc_auc_score(testy, probs)
         print('AUC calculada para el modelo '+modelName+': %.2f' % auc)
+        fpr, tpr, thresholds = roc_curve(testy, probs)  
+        self.__drawRocCurve(fpr, tpr, modelName)
+        
         return auc
 
     def __drawRocCurve(self, fpr, tpr, modelName):
