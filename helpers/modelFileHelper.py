@@ -19,6 +19,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 
+
 #define a class to help us with the process
 
 class ModelFileHelper(object):
@@ -195,6 +196,7 @@ class ModelFileHelper(object):
         El modo Silent activa la salida de texto informativo
         El modo ROC_Curve genera la curva ROC para cada algoritmo ayudando de forma visual a la determinación del mejor.
         Retorna el mejor algoritmo en base a la mejor precisión para cada uno de los algorimos empleados en la estimación que son los siguientes:
+          - XGBoost  
           - Regresión logística
           - Random Forest
           - Árboles de decisión
@@ -258,23 +260,22 @@ class ModelFileHelper(object):
             # posicion [3] AUC del modelo
             precisiones.append((model_name, model_engine, precisionModelo,aucModelo))    
         
-    
         #ordenar de mayor a menor usando el AUC de los modelos: 
         precisiones.sort(key=lambda tupla: tupla[3], reverse=True) 
         if (Silent==False):
-            print ("Mejor algoritmo: " + precisiones[0][0] + " con una precision media del " + precisiones[0][2] + "% y un AUC de " + precisiones[0][3] )
- 
+            print ("Mejor algoritmo: " + precisiones[0][0] + " con una precision media del " + precisiones[0][2] + "% y un AUC de " + str(precisiones[0][3]) )
+            print("exportando el mejor de los modelos:")
 
-       # print("exportando el mejor de los modelos:")
         #generar el dataframe de salida:
-       #  resultado= self.__getResultado(identifierColumn,predictColumn,xTest, probs)
-       # tupla = precisiones[0]
-       # tupla[2].to_csv( tupla[0] +"_submission.csv", index=False)
-       # print ("Generado " +tupla[0] + "_submission.csv" )  
+        algoritmopredictivo =  precisiones[0][1]
+        algoritmopredictivo_name =  precisiones[0][0]
+
+       # Generamos el fichero eligiendo solamente las probabilidades positivas , es decir que sea mujer.
+        resultado=  pd.DataFrame({identifierColumn : xTest_full[identifierColumn].astype(int), predictColumn: algoritmopredictivo.predict_proba(xTest_full)[:,1]})
+        resultado.to_csv( "output/" + algoritmopredictivo_name +"_submission.csv", index=False)
+        print ("Generado " + algoritmopredictivo_name + "_submission.csv en output/" )  
     
-    def __getResultado(self, identifierColumn, predictedColumn, test, predictions):
-        return pd.DataFrame({identifierColumn : test[identifierColumn], predictedColumn: predictions})
-    
+
     def __calculateRocAucCurve(self, testy, probs, modelName):
         #Nos quedamos con las probabilidades de la clase positiva únicamente
         probs = probs[:, 1]
